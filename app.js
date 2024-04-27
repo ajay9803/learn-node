@@ -1,10 +1,21 @@
 const express = require("express");
+const bodyParser = require("body-parser");
 const app = express();
-const port = 3000;
+const port = 8080;
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+const feedRoutes = require("./routes/feed");
 
-app.get("/", (req, res) => res.send("Hello World!"));
-app.get("/back", (req, res) => {
-  res.redirect("/");
+// app.use(bodyParser.urlencoded()); // <form>
+
+app.use(bodyParser.json()); // application/json
+
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "*");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
 });
+
+app.use("/feeds", feedRoutes);
+
+app.listen(port);
