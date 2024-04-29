@@ -1,5 +1,5 @@
-const { validationResult } = require("express-validator");
 const Post = require("../models/post");
+const postValidationSchema = require("../validators/post_validator");
 
 exports.getPosts = (req, res, next) => {
   Post.find()
@@ -26,13 +26,14 @@ exports.getPosts = (req, res, next) => {
 };
 
 exports.createPost = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
+  const { error } = postValidationSchema.validate(req.body);
+  if (error) {
     return res.status(422).json({
       message: "Validation failed.",
-      error: errors.array(),
+      error: error.details,
     });
   }
+
   const title = req.body.title;
   const content = req.body.content;
   const post = new Post({
