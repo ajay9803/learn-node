@@ -1,10 +1,9 @@
 const express = require("express");
-// const path = require("path");
 const bodyParser = require("body-parser");
-
 const mongoose = require("mongoose");
-
 const app = express();
+const path = require("path");
+
 const port = 8080;
 const databaseUrl = "mongodb://localhost:27017/feeds-app";
 
@@ -18,7 +17,7 @@ app.use((req, res, next) => {
 });
 
 app.use(bodyParser.json());
-// app.use("/images", express.static(path.join(__dirname, "images")));
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 app.use("/feeds", feedRoutes);
 

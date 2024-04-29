@@ -1,5 +1,5 @@
 const express = require("express");
-// const fileUploader = require("../middlewares/file_upload.js");
+const fileUploader = require("../middlewares/file_upload.js");
 
 const feedsController = require("../controllers/feed");
 
@@ -8,7 +8,7 @@ const router = express.Router();
 router.get("/posts", feedsController.getPosts);
 router.post(
   "/add-post",
-
+  fileUploader.single("imageUrl"),
   feedsController.createPost
 );
 

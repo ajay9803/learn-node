@@ -11,6 +11,10 @@ const postSchema = new Schema(
       type: String,
       required: true,
     },
+    images: {
+      type: [String],
+      default: [],
+    },
     content: {
       type: String,
       required: true,
@@ -24,5 +28,3 @@ const postSchema = new Schema(
 );
 
 module.exports = mongoose.model("Post", postSchema);
-
-

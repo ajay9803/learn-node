@@ -26,16 +26,18 @@ exports.getPosts = (req, res, next) => {
 };
 
 exports.createPost = (req, res, next) => {
-  const { error } = postValidationSchema.validate(req.body);
-  if (error) {
-    return res.status(422).json({
-      message: "Validation failed.",
-      error: error.details,
-    });
-  }
+  // const { error } = postValidationSchema.validate(req.body);
+  // if (error) {
+  //   return res.status(422).json({
+  //     message: "Validation failed.",
+  //     error: error.details,
+  //   });
+  // }
 
-  const title = req.body.title;
-  const content = req.body.content;
+  const image = req.file ? req.file : 'empty';
+  console.log(image);
+
+  const { title, content } = req.body;
   const post = new Post({
     title: title,
     content: content,
