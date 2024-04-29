@@ -1,6 +1,6 @@
 const express = require("express");
 const { body } = require("express-validator");
-const fileUploader = require("../middlewares/file_upload.js");
+// const fileUploader = require("../middlewares/file_upload.js");
 
 const feedsController = require("../controllers/feed");
 
@@ -13,10 +13,13 @@ router.post(
     body("title").trim().isLength({ min: 5 }),
     body("content").trim().isLength({ min: 10 }),
   ],
-  fileUploader.single("image"),
-  feedsController.createPost,
+  feedsController.createPost
 );
 
 router.get("/posts/:postId", feedsController.getPost);
+
+router.put("/posts/edit-post/:postId", feedsController.editPost);
+
+router.delete("/posts/delete-post/:postId", feedsController.deletePost);
 
 module.exports = router;

@@ -5,7 +5,7 @@ exports.getPosts = (req, res, next) => {
   Post.find()
     .then((posts) => {
       if (!posts) {
-        const error = new Error("Couldn't find post");
+        const error = new Error("No posts available.");
         error.statusCode = 404;
         throw error;
       } else {
@@ -19,48 +19,43 @@ exports.getPosts = (req, res, next) => {
       if (!e.statusCode) {
         e.statusCode = 500;
       }
-      next(e);
+      res.status(e.statusCode).json({
+        message: e.message,
+      });
     });
 };
 
 exports.createPost = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.status(422).send({
-      message: "Validation Failed",
-      errors: errors.array(),
+    return res.status(422).json({
+      message: "Validation failed.",
+      error: errors.array(),
     });
   }
-  if (!req.file) {
-    console.log("File not found");
-    const error = new Error("File not found.");
-    error.statusCode = 422;
-    throw error;
-  }
-  console.log(req.file);
-  const imageUrl = req.file.path;
-
   const title = req.body.title;
   const content = req.body.content;
   const post = new Post({
     title: title,
     content: content,
     creator: { name: "Sagar" },
-    imageUrl: imageUrl,
+    imageUrl: "dummy.png",
   });
   post
     .save()
     .then((result) => {
       res.status(201).json({
-        message: "Post created successfully",
+        message: "Post created successfully.",
         post: result,
       });
     })
     .catch((e) => {
-      console.log(e);
-      res.json({ message: "Error occurred." });
+      if (!e.statusCode) {
+        e.statusCode = 500;
+      }
+
+      next(e);
     });
-  // create post in db
 };
 
 exports.getPost = (req, res, next) => {
@@ -68,7 +63,7 @@ exports.getPost = (req, res, next) => {
   Post.findById(postId)
     .then((post) => {
       if (!post) {
-        const error = new Error("Couldn't find post");
+        const error = new Error("Couldn't find post.");
         error.statusCode = 404;
         throw error;
       } else {
@@ -79,9 +74,63 @@ exports.getPost = (req, res, next) => {
       }
     })
     .catch((e) => {
+      console.log("yeta error");
       if (!e.statusCode) {
         e.statusCode = 500;
       }
-      next(e);
+      res.status(e.statusCode).json({
+        message: e.message,
+      });
+    });
+};
+
+exports.editPost = async (req, res, next) => {
+  console.log("idhar");
+  let title = req.body.title;
+  let content = req.body.content;
+  const postId = req.params.postId;
+  let post = await Post.findById(postId);
+
+  if (!post) {
+    return res.status(404).json({
+      message: "No post found.",
+    });
+  }
+
+  post.title = title;
+  post.content = content;
+  post
+    .save()
+    .then((post) => {
+      res.status(200).json({
+        message: "Post updated successfully.",
+        post: post,
+      });
+    })
+    .catch((e) => {
+      if (!e.statusCode) {
+        e.statusCode = 500;
+      }
+      res.status(e.statusCode).json({
+        message: e.message,
+      });
+    });
+};
+
+exports.deletePost = async (req, res, next) => {
+  const postId = req.params.postId;
+
+  Post.findById(postId)
+    .then((post) => {
+      post.deleteOne().then((post) => {
+        res.status(204).json({
+          message: "Post deleted successfully.",
+        });
+      });
+    })
+    .catch((e) => {
+      res.status(404).json({
+        message: "Post not found.",
+      });
     });
 };
