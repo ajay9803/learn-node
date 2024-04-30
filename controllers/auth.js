@@ -71,7 +71,7 @@ exports.login = async (req, res, next) => {
       theError.statusCode = 401;
       throw theError;
     } else {
-      const token = jwt.sign(
+      const token = await jwt.sign(
         {
           email: user.email,
           userId: user._id.toString(),

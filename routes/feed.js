@@ -17,10 +17,11 @@ router.post(
   feedsController.createPost
 );
 
-router.get("/:postId", feedsController.getPost);
+router.get("/:postId", isAuth, feedsController.getPost);
 
 router.put(
   "/edit-post/:postId",
+  isAuth,
   fileUploader.fields([
     { name: "imageUrl", maxCount: 1 },
     { name: "images", maxCount: 5 },
@@ -28,6 +29,6 @@ router.put(
   feedsController.editPost
 );
 
-router.delete("/posts/delete-post/:postId", feedsController.deletePost);
+router.delete("/delete-post/:postId", isAuth, feedsController.deletePost);
 
 module.exports = router;

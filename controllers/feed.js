@@ -174,12 +174,26 @@ exports.editPost = async (req, res, next) => {
   //   console.log("not equal");
   //   clearImage(`images/${post.imageUrl}`);
   // }
+  const post = await Post.findById(postId);
 
-  Post.findOneAndUpdate(
-    { _id: postId },
-    { title: title, content: content, imageUrl: imageUrl, images: images },
-    { new: true }
-  )
+  if (!post) {
+    const error = new Error("Post not found.");
+    error.statusCode = 404;
+    next(error);
+  }
+  post.title = title;
+  post.content = content;
+  post.imageUrl = imageUrl;
+  post.images = images;
+
+  if (post.creator.toString() !== req.userId) {
+    const error = new Error("Forbidden.");
+    error.statusCode = 403;
+    next(error);
+  }
+
+  post
+    .save()
     .then((post) => {
       res.status(200).json({
         message: "Post updated successfully.",
@@ -201,16 +215,33 @@ exports.deletePost = async (req, res, next) => {
 
   Post.findById(postId)
     .then((post) => {
-      post.deleteOne().then((post) => {
-        res.status(204).json({
-          message: "Post deleted successfully.",
+      if (post.creator.toString() !== req.userId) {
+        const error = new Error("Forbidden.");
+        error.statusCode = 403;
+        throw error;
+      }
+
+      post.deleteOne().then(async (post) => {
+        const user = await User.findById(req.userId);
+        if (!user) {
+          const error = new Error("User not found.");
+          error.statusCode = 404;
+          throw error;
+        }
+
+        user.posts.pull(postId);
+        user.save().then((result) => {
+          res.status(204).json({
+            message: "Post deleted successfully.",
+          });
         });
       });
     })
     .catch((e) => {
-      res.status(404).json({
-        message: "Post not found.",
-      });
+      if (!e.statusCode) {
+        e.statusCode = 500;
+      }
+      next(e);
     });
 };
 

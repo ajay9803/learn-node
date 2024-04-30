@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 app.use("/", routes);
 
 app.use((error, req, res, next) => {
-  console.log('handled here.');
+  console.log("handled here.");
   const statusCode = error.statusCode || 500;
   const message = error.message;
   const data = error.data;
