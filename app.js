@@ -1,11 +1,24 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const app = express();
+const http = require("http");
 const routes = require("./routes/index");
-
 const port = 8080;
 const databaseUrl = "mongodb://localhost:27017/feeds-app";
+const { Server } = require("socket.io");
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+});
+
+var cors = require("cors");
+
+app.use(cors());
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -18,7 +31,6 @@ app.use(bodyParser.json());
 app.use("/", routes);
 
 app.use((error, req, res, next) => {
-  console.log("handled here.");
   const statusCode = error.statusCode || 500;
   const message = error.message;
   const data = error.data;
@@ -29,11 +41,20 @@ app.use((error, req, res, next) => {
 });
 
 // app.use("/images", express.static(path.join(__dirname, "/images")));
+let messages = [];
 
 mongoose
   .connect(databaseUrl)
   .then((_) => {
-    app.listen(port);
+    io.on("connection", (socket) => {
+      socket.on("chat-message", (message) => {
+        messages.push(message);
+        io.emit("messages", messages);
+      });
+    });
+    server.listen(port, () => {
+      console.log("Server is running on port: 8080");
+    });
   })
   .catch((e) => {
     console.log(e);
