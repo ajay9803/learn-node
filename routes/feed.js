@@ -17,7 +17,14 @@ router.post(
 
 router.get("/posts/:postId", feedsController.getPost);
 
-router.put("/posts/edit-post/:postId", feedsController.editPost);
+router.put(
+  "/posts/edit-post/:postId",
+  fileUploader.fields([
+    { name: "imageUrl", maxCount: 1 },
+    { name: "images", maxCount: 5 },
+  ]),
+  feedsController.editPost
+);
 
 router.delete("/posts/delete-post/:postId", feedsController.deletePost);
 

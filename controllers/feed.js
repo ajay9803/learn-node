@@ -113,22 +113,46 @@ exports.getPost = (req, res, next) => {
 };
 
 exports.editPost = async (req, res, next) => {
-  console.log("idhar");
   let title = req.body.title;
   let content = req.body.content;
   const postId = req.params.postId;
-  let post = await Post.findById(postId);
 
-  if (!post) {
-    return res.status(404).json({
-      message: "No post found.",
+  let imageUrl;
+  let images = [];
+
+  if (req.files) {
+    if (!req.files["imageUrl"]) {
+      imageUrl = req.body.imageUrl;
+    } else {
+      imageUrl = path.basename(req.files["imageUrl"][0].filename);
+    }
+
+    if (req.files["images"].length !== 0) {
+      req.files["images"].map((theImage) => {
+        images.push(path.basename(theImage.filename));
+      });
+    } else {
+      images = req.body.images;
+    }
+  }
+
+  const { error } = postValidationSchema.validate({
+    ...req.body,
+    imageUrl: imageUrl,
+    images: images,
+  });
+  if (error) {
+    return res.status(422).json({
+      message: "Validation failed.",
+      error: error.details,
     });
   }
 
-  post.title = title;
-  post.content = content;
-  post
-    .save()
+  Post.findOneAndUpdate(
+    { _id: postId },
+    { title: title, content: content, imageUrl: imageUrl, images: images },
+    { new: true }
+  )
     .then((post) => {
       res.status(200).json({
         message: "Post updated successfully.",
