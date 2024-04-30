@@ -2,12 +2,10 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const app = express();
-const path = require("path");
+const routes = require("./routes/index");
 
 const port = 8080;
 const databaseUrl = "mongodb://localhost:27017/feeds-app";
-
-const feedRoutes = require("./routes/feed");
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -17,9 +15,20 @@ app.use((req, res, next) => {
 });
 
 app.use(bodyParser.json());
-// app.use("/images", express.static(path.join(__dirname, "/images")));
+app.use("/", routes);
 
-app.use("/feeds", feedRoutes);
+app.use((error, req, res, next) => {
+  console.log('handled here.');
+  const statusCode = error.statusCode || 500;
+  const message = error.message;
+  const data = error.data;
+  res.status(statusCode).json({
+    message: message,
+    data: data,
+  });
+});
+
+// app.use("/images", express.static(path.join(__dirname, "/images")));
 
 mongoose
   .connect(databaseUrl)

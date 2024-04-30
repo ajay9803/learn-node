@@ -1,6 +1,8 @@
 const Post = require("../models/post");
 const postValidationSchema = require("../validators/post_validator");
 const path = require("path");
+const fs = require("fs");
+
 exports.getPosts = (req, res, next) => {
   Post.find()
     .then((posts) => {
@@ -127,7 +129,7 @@ exports.editPost = async (req, res, next) => {
       imageUrl = path.basename(req.files["imageUrl"][0].filename);
     }
 
-    if (req.files["images"].length !== 0) {
+    if (!req.files["images"]) {
       req.files["images"].map((theImage) => {
         images.push(path.basename(theImage.filename));
       });
@@ -147,6 +149,15 @@ exports.editPost = async (req, res, next) => {
       error: error.details,
     });
   }
+
+  // const post = await Post.findById(postId);
+
+  // Clear out previous image in images-folder
+
+  // if (imageUrl !== post.imageUrl) {
+  //   console.log("not equal");
+  //   clearImage(`images/${post.imageUrl}`);
+  // }
 
   Post.findOneAndUpdate(
     { _id: postId },
@@ -185,4 +196,10 @@ exports.deletePost = async (req, res, next) => {
         message: "Post not found.",
       });
     });
+};
+
+const clearImage = (filePath) => {
+  console.log(__dirname);
+  filePath = path.join(__dirname, "..", filePath);
+  fs.unlink(filePath, (err) => console.log(err));
 };
