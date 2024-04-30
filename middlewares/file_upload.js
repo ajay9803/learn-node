@@ -1,35 +1,35 @@
 const multer = require("multer");
 
-const fileStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, process.cwd() + '/images');
+const myStorage = multer.diskStorage({
+  destination: (req, res, cb) => {
+    let path = process.cwd() + "/images";
+    cb(null, path);
   },
   filename: (req, file, cb) => {
-    cb(null, new Date().toISOString() + "_" + file.originalname);
+    let f_name = Date.now() + "-" + file.originalname;
+    cb(null, f_name);
   },
 });
 
 const fileFilter = (req, file, cb) => {
-  if (
-    file.mimetype === "image/png" ||
-    file.mimetype === "image/jpg" ||
-    file.mimetype === "image/jpeg"
-  ) {
-    cb(null, true);
-  } else {
-    cb(null, false);
+  try {
+    if (
+      file.mimetype === "image/png" ||
+      file.mimetype === "image/jpg" ||
+      file.mimetype === "image/jpeg"
+    ) {
+      cb(null, true);
+    } else {
+      cb(null, false);
+    }
+  } catch (error) {
+    cb(error, false);
   }
 };
 
-const fileUploader = multer({
-  storage: fileStorage,
+const uploader = multer({
+  storage: myStorage,
   fileFilter: fileFilter,
 });
 
-module.exports = fileUploader;
-
-// router.post(
-//   "/add-post",
-//   fileUploader.single("imageUrl"),
-//   feedsController.createPost
-// );
+module.exports = uploader;

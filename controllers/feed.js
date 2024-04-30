@@ -1,6 +1,6 @@
 const Post = require("../models/post");
 const postValidationSchema = require("../validators/post_validator");
-
+const path = require("path");
 exports.getPosts = (req, res, next) => {
   Post.find()
     .then((posts) => {
@@ -9,6 +9,11 @@ exports.getPosts = (req, res, next) => {
         error.statusCode = 404;
         throw error;
       } else {
+        if (posts.length === 0) {
+          const error = new Error("No posts available.");
+          error.statusCode = 404;
+          throw error;
+        }
         res.status(200).json({
           message: "Posts fetched successfully.",
           posts: posts,
@@ -26,23 +31,43 @@ exports.getPosts = (req, res, next) => {
 };
 
 exports.createPost = (req, res, next) => {
-  // const { error } = postValidationSchema.validate(req.body);
-  // if (error) {
-  //   return res.status(422).json({
-  //     message: "Validation failed.",
-  //     error: error.details,
-  //   });
-  // }
+  let image;
+  let images = [];
 
-  const image = req.file ? req.file : 'empty';
-  console.log(image);
+  if (req.files) {
+    if (!req.files["imageUrl"]) {
+      return res.status(422).json({
+        message: "No imageUrl found.",
+      });
+    }
+
+    if (req.files["images"].length !== 0) {
+      req.files["images"].map((theImage) => {
+        images.push(path.basename(theImage.filename));
+      });
+    }
+  }
+  image = req.files["imageUrl"][0];
+  const imageUrl = path.basename(image.filename);
+  const { error } = postValidationSchema.validate({
+    ...req.body,
+    imageUrl: imageUrl,
+    images: images,
+  });
+  if (error) {
+    return res.status(422).json({
+      message: "Validation failed.",
+      error: error.details,
+    });
+  }
 
   const { title, content } = req.body;
   const post = new Post({
     title: title,
     content: content,
     creator: { name: "Sagar" },
-    imageUrl: "dummy.png",
+    imageUrl: imageUrl,
+    images: images,
   });
   post
     .save()
