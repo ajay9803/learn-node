@@ -2,6 +2,7 @@ const Post = require("../models/post");
 const postValidationSchema = require("../validators/post_validator");
 const path = require("path");
 const fs = require("fs");
+const User = require("../models/user");
 
 exports.getPosts = (req, res, next) => {
   Post.find()
@@ -67,17 +68,32 @@ exports.createPost = (req, res, next) => {
   const post = new Post({
     title: title,
     content: content,
-    creator: { name: "Sagar" },
+    creator: req.userId,
     imageUrl: imageUrl,
     images: images,
   });
   post
     .save()
-    .then((result) => {
-      res.status(201).json({
-        message: "Post created successfully.",
-        post: result,
-      });
+    .then(async (result) => {
+      const user = await User.findById(req.userId);
+      if (!user) {
+        const error = new Error("Something went wrong.");
+        error.statusCode = 404;
+        throw error;
+      }
+
+      user.posts.push(result);
+      user
+        .save()
+        .then(() => {
+          res.status(201).json({
+            message: "Post created successfully.",
+            post: result,
+          });
+        })
+        .catch((e) => {
+          throw e;
+        });
     })
     .catch((e) => {
       if (!e.statusCode) {

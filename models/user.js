@@ -22,12 +22,12 @@ const userSchema = new Schema(
     status: {
       type: String,
       required: true,
-      default: 'user',
+      default: "user",
     },
     posts: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'Post',
+        ref: "Post",
       },
     ],
   },

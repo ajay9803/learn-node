@@ -9,6 +9,7 @@ const router = express.Router();
 router.get("/all-posts", isAuth, feedsController.getPosts);
 router.post(
   "/add-post",
+  isAuth,
   fileUploader.fields([
     { name: "imageUrl", maxCount: 1 },
     { name: "images", maxCount: 5 },
